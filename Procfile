@@ -1,0 +1,1 @@
+web: gunicorn bookhero_prj.wsgi:application

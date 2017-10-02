@@ -1,0 +1,40 @@
+
+{% extends 'base.html'%}
+{% block content %}
+
+<h1>Bookings list</h1>
+
+
+<a href="{% url 'booking-create' %}">Add Booking</a>
+<ul>
+{% for contact in object_list %}
+    <li>{{ booking.customer.first_name }} - {{ booking.customer.email }}
+        <a href="{{ booking.get_absolute_url }}">View</a> |
+        <a href="{% url 'booking-edit' booking.id %}">Edit</a> |
+        <a href="{% url 'booking-delete' booking.id %}">Delete</a></li>
+{% empty %}
+    <li>No contacts yet.</li>
+{% endfor %}
+
+<hr>
+
+{% if is_paginated %}
+  <div class="pagination">
+      <span class="page-links">
+          {% if page_obj.has_previous %}
+              <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">previous</a>
+          {% endif %}
+          <span class="page-current">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+          </span>
+          {% if page_obj.has_next %}
+              <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">next</a>
+          {% endif %}
+      </span>
+  </div>
+{% endif %}
+
+</ul>
+
+
+{%  endblock %}

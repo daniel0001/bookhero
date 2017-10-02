@@ -1,0 +1,1 @@
+C:\Users\danie\virtualenvs\bookherotest_env\Scripts\activate

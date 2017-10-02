@@ -1,0 +1,13 @@
+
+
+{% extends 'base.html'%}
+{% block content %}
+
+
+<a href="{% url 'booking-list' %}">Back to Contacts</a>
+<hr>
+<h1>{{ booking.cutomer.first_name }}</h1>
+<p>{{ booking.cutomer.email }}</p>
+
+
+{%  endblock %}

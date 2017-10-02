@@ -1,10 +1,12 @@
-{% extends 'base.html'%}
+{% extends "base.html" %}
+{% load bootstrap_tags %}
 {% block content %}
-
-
-<h4>Register</h4>
-<a href="{% url 'login' %}"> Login</a>
-<a href="{% url 'booking' %}"> Booking</a>
-<a href="{% url 'payment' %}"> Payment</a>
-
+    <form role="form" method="post" action="{% url 'register' %}">
+        <legend>Create a new account</legend>
+        {% csrf_token %}
+        {{ form | as_bootstrap }}
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Create account</button>
+        </div>
+    </form>
 {% endblock %}

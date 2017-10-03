@@ -1,71 +1,42 @@
-from django.contrib import messages, auth
-from django.core.urlresolvers import reverse
-from django.shortcuts import render, redirect, HttpResponseRedirect
-from django.contrib.auth.decorators import login_required
-from accounts.forms import UserRegistrationForm, UserLoginForm
-from django.template.context_processors import csrf
-from django.conf import settings
-from django.utils import timezone
-import arrow
-from django.views.decorators.csrf import csrf_exempt
-import json
-from django.contrib.auth.models import User
-from django.http import HttpResponse
-from .models import UserProfile
-
-def logout(request):
-    auth.logout(request)
-    messages.success(request, 'You have successfully logged out')
-    return redirect(reverse('login'))
-    
-def login(request):
-    if request.method == 'POST':
-        form = UserLoginForm(request.POST)
-        if form.is_valid():
-            user = auth.authenticate(username=request.POST.get('username_or_email'),
-                                     password=request.POST.get('password'))
-
-            if user is not None:
-                auth.login(request, user)
-                messages.error(request, "You have successfully logged in")
-
-                if request.GET and 'next' in request.GET:
-                    next = request.GET['next']
-                    return HttpResponseRedirect(next)
-                else:
-                    return redirect(reverse('booking-list'))
-            else:
-                form.add_error(None, "Your username or password was not recognised")
-
-    else:
-        form = UserLoginForm()
-
-    args = {'form': form, 'next': request.GET['next'] if request.GET and 'next' in request.GET else ''}
-    args.update(csrf(request))
-    return render(request, 'login.html', args)
+from django.contrib.auth.forms import PasswordResetForm
+from django.shortcuts import redirect
+from django.views.generic import CreateView
 
 
-def register(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            form.save()
+from .forms import RegistrationForm
+from .models import User
 
-            user = auth.authenticate(username=request.POST.get('username'),
-                                     password=request.POST.get('password1'))
 
-            if user:
-                auth.login(request, user)
-                messages.success(request, "You have successfully registered")
-                return redirect(reverse('profile'))
+class RegistrationView(CreateView):
+    form_class = RegistrationForm
+    success_url = 'accounts:register-done'
+    model = User
 
-            else:
-                messages.error(request, "unable to log you in at this time!")
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.set_password(User.objects.make_random_password())
+        obj.save()
 
-    else:
-        form = UserRegistrationForm()
+        # This form only requires the "email" field, so will validate.
+        reset_form = PasswordResetForm(self.request.POST)
+        reset_form.is_valid()  # Must trigger validation
+        # Copied from django/contrib/auth/views.py : password_reset
+        opts = {
+            'use_https': self.request.is_secure(),
+            'email_template_name': 'registration/verification.html',
+            'subject_template_name': 'registration/verification_subject.txt',
+            'request': self.request,
+            # 'html_email_template_name': provide an HTML content template if you desire.
+        }
+        # This form sends the email on save()
+        reset_form.save(**opts)
 
-    args = {'form': form}
-    args.update(csrf(request))
+        return redirect(self.get_success_url())
 
-    return render(request, 'register.html', args)
+# class AccountDetailView(DetailView):
+# 	template_name = 'account-details.html'
+# 	model = User
+
+# class ContactUpdateView(UpdateView):
+#     model = User
+#     fields = ['email', ]

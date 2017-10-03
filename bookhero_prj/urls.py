@@ -18,14 +18,14 @@ from django.contrib import admin
 from accounts import urls as accounts_urls
 from payment import urls as payment_urls
 from booking import urls as booking_urls
-from booking.views import booking
+# from booking.views import booking
 
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', booking),
-    url(r'^accounts/', include(accounts_urls)),
+    # url(r'^$', booking),
+    url(r'^accounts/', include('accounts.urls', namespace='accounts')),
     url(r'^payment/', include(payment_urls)),
     url(r'^booking/', include(booking_urls)),
 
